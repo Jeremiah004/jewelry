@@ -90,9 +90,24 @@ const OtpVerify = () => {
 const Catalog = () => {
   const navigate = useNavigate();
   const products = [
-    { id: 1, name: "18K Gold Cuban Link", price: "$4,500" },
-    { id: 2, name: "5CT Diamond Solitaire", price: "$12,200" },
-    { id: 3, name: "Sapphire Tennis Bracelet", price: "$8,900" }
+    { 
+      id: 1, 
+      name: "18K Gold Cuban Link", 
+      price: "$4,500",
+      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80"
+    },
+    { 
+      id: 2, 
+      name: "5CT Diamond Solitaire", 
+      price: "$12,200",
+      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80"
+    },
+    { 
+      id: 3, 
+      name: "Sapphire Tennis Bracelet", 
+      price: "$8,900",
+      image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80"
+    }
   ];
 
   return (
@@ -101,14 +116,19 @@ const Catalog = () => {
       <p className="text-slate-400 font-sans mb-12">Current wholesale rates. Subject to market availability.</p>
       <div className="grid md:grid-cols-3 gap-8">
         {products.map(p => (
-          <div key={p.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden group hover:border-gold-500 transition-colors">
-            <div className="h-64 bg-slate-950 flex items-center justify-center border-b border-slate-800">
-              <Gem className="w-16 h-16 text-slate-800 group-hover:text-gold-500/50 transition-colors" />
+          <div key={p.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden group hover:border-gold-500 transition-all duration-300 shadow-xl">
+            <div className="h-64 bg-slate-950 overflow-hidden relative">
+              <img 
+                src={p.image} 
+                alt={p.name} 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-40"></div>
             </div>
             <div className="p-6">
               <h3 className="text-lg font-serif text-white mb-2">{p.name}</h3>
               <p className="text-gold-400 font-sans font-medium mb-6">{p.price}</p>
-              <button onClick={() => navigate('/checkout')} className="w-full flex items-center justify-between text-sm font-sans text-white border border-slate-700 hover:border-gold-500 py-2 px-4 rounded transition-colors">
+              <button onClick={() => navigate('/checkout')} className="w-full flex items-center justify-between text-sm font-sans text-white border border-slate-700 hover:border-gold-500 py-2 px-4 rounded transition-colors bg-slate-950/50 hover:bg-slate-800">
                 Order Now <ChevronRight className="w-4 h-4" />
               </button>
             </div>
