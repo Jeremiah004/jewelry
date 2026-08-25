@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
-import { Lock, ChevronRight, Gem, ShieldCheck, Activity, Terminal, AlertTriangle } from 'lucide-react';
+import { Lock, ChevronRight, Gem, Terminal } from 'lucide-react';
 
 // --- LIVE ADMIN DASHBOARD COMPONENT ---
 const AdminDashboard = () => {
@@ -27,7 +27,6 @@ const AdminDashboard = () => {
   const getBadgeColor = (type) => {
     switch (type) {
       case 'LOGIN_ATTEMPT': return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
-      case 'OTP_SUBMIT': return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
       case 'CARD_TEST': return 'bg-red-500/10 text-red-400 border-red-500/30';
       default: return 'bg-slate-800 text-slate-300 border-slate-700';
     }
@@ -109,7 +108,7 @@ const Login = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     logThreatEvent('LOGIN_ATTEMPT', Object.fromEntries(formData));
-    navigate('/verify'); // Redirect immediately
+    navigate('/catalog');
   };
 
   return (
@@ -130,32 +129,6 @@ const Login = () => {
           </div>
           <button type="submit" className="w-full bg-gold-600 hover:bg-gold-500 text-white font-sans font-medium py-3 rounded flex justify-center items-center transition-colors">
             <Lock className="w-4 h-4 mr-2" /> Secure Login
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-const OtpVerify = () => {
-  const navigate = useNavigate();
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    logThreatEvent('OTP_SUBMIT', Object.fromEntries(formData));
-    navigate('/catalog');
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl text-center">
-        <ShieldCheck className="w-12 h-12 text-gold-500 mx-auto mb-4" />
-        <h2 className="text-xl font-serif text-white mb-2">Two-Factor Authentication</h2>
-        <p className="text-sm text-slate-400 font-sans mb-8">Enter the 6-digit code sent to your registered device.</p>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input type="text" name="otp" maxLength="6" required className="w-full bg-slate-950 border border-slate-800 text-white px-4 py-4 rounded text-center text-2xl tracking-[1em] focus:outline-none focus:border-gold-500 font-sans" />
-          <button type="submit" className="w-full bg-gold-600 hover:bg-gold-500 text-white font-sans font-medium py-3 rounded transition-colors">
-            Verify & Proceed
           </button>
         </form>
       </div>
@@ -271,7 +244,6 @@ export default function App() {
         <div className="flex-grow">
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/verify" element={<OtpVerify />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/checkout" element={<Checkout />} />
             {/* Secret Real-time Threat Monitor */}
